@@ -13,3 +13,22 @@ steps:
   - name: python
     entrypoint: python
     args: ["-m", "pytest", "-vv", "--cov=hello", "test_hello.py"]
+
+  # Docker Build
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t',
+           'us-central1-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/myimage:${SHORT_SHA}', '.']
+
+  # Docker push to Google Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push',  'us-central1-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/myimage:${SHORT_SHA}']
+
+# Save test logs to Google Cloud Storage
+artifacts:
+  objects:
+    location: gs://${_BUCKET_NAME}/
+    paths:
+      - ${SHORT_SHA}_test_log.xml
+# Store images in Google Artifact Registry
+images:
+  - us-central1-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/myimage:${SHORT_SHA}
